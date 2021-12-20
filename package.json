@@ -69,5 +69,8 @@
       "**/circomlib",
       "**/circomlib/**"
     ]
+  },
+  "dependencies": {
+    "fixed-merkle-tree": "^0.6.0"
   }
 }
