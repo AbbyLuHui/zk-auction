@@ -2,8 +2,10 @@ const { ethers } = require("hardhat");
 const { use, expect, assert } = require("chai");
 const { solidity } = require("ethereum-waffle");
 // const { MerkleTree } = require('./merkleTree');
-const MerkleTree = require('fixed-merkle-tree')
+const MerkleTree = require('fixed-merkle-tree');
 const snarkjs = require('snarkjs');
+const { createCode, abi } = require("../node_modules/circomlib/src/poseidon_gencontract");
+const { ContractFactory, BigNumber, BigNumberish } = require("ethers");
 
 use(solidity);
 
@@ -14,6 +16,54 @@ function toFixedHex(number, length = 32) {
   return str
 }
 
+
+function getPoseidonFactory(nInputs) {
+    const bytecode = createCode(nInputs);
+    const abiJson = [{
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": `bytes32[${nInputs}]`,
+                "name": "input",
+                "type": `bytes32[${nInputs}]`
+            }
+        ],
+        "name": "poseidon",
+        "outputs": [
+            {
+                "internalType": "bytes32",
+                "name": "",
+                "type": "bytes32"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+    }, {
+        "constant": true,
+        "inputs": [
+            {
+                "internalType": `uint256[${nInputs}]`,
+                "name": "input",
+                "type": `uint256[${nInputs}]`
+            }
+        ],
+        "name": "poseidon",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+    }];
+    const abi = new ethers.utils.Interface(abiJson);
+    return new ContractFactory(abi, bytecode);
+}
+
 describe("My Dapp", function () {
   let myContract;
   let merkleTreeWithHistory; 
@@ -21,10 +71,16 @@ describe("My Dapp", function () {
   let Poseidon;
   let hasherInstance;
 
+  beforeEach(async function () {
+    const [signer] = await ethers.getSigners();
+    Poseidon = await getPoseidonFactory(2).connect(signer).deploy();
+  });
+
 
 
   describe("YourContract", function () {
     it("Should deploy YourContract", async function () {
+      /*
       const PoseidonContract = await ethers.getContractFactory("PoseidonT3");
       Poseidon = await PoseidonContract.deploy();
       const hasherContract = await ethers.getContractFactory("Hasher", {
@@ -38,7 +94,9 @@ describe("My Dapp", function () {
           PoseidonT3: Poseidon.address,
         }
       });
-      myContract = await YourContract.deploy(levels, hasherInstance.address);
+      */
+      YourContract = await ethers.getContractFactory("YourContract")
+      myContract = await YourContract.deploy(levels, Poseidon.address);
     });
 
     describe("setPurpose()", function () {
@@ -89,12 +147,8 @@ describe("My Dapp", function () {
 
       it('should reject if tree is full', async () => {
         const levels = 6
-        const MerkleContract = await ethers.getContractFactory("YourContract", {
-            libraries: {
-              PoseidonT3: Poseidon.address,
-            }
-        });
-        merkleTreeWithHistory = await MerkleContract.deploy(levels, hasherInstance.address);
+        const MerkleContract = await ethers.getContractFactory("YourContract");
+        merkleTreeWithHistory = await MerkleContract.deploy(levels, Poseidon.address);
   
         for (let i = 0; i < 2 ** levels; i++) {
           await merkleTreeWithHistory.commit(toFixedHex(i + 42))

@@ -12,17 +12,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
-import { Hasher } from "./Hasher.sol";
+// import { Hasher } from "./Hasher.sol";
 
-/*
-interface Hasher {
+
+contract Hasher {
     function poseidon(bytes32[2] calldata leftRight)
         external
         pure
-        returns (bytes32);
-}*/
+        returns (bytes32) {}
+}
 
-contract MerkleTreeWithHistory is Hasher {
+
+
+contract MerkleTreeWithHistory {
   uint256 public constant FIELD_SIZE = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
   uint256 public constant ZERO_VALUE = 21663839004416932945382355908790599225266501822907911457504978515578255421292; // = keccak256("tornado") % FIELD_SIZE
 
@@ -45,6 +47,7 @@ contract MerkleTreeWithHistory is Hasher {
     require(_levels < 32, "_levels should be less than 32");
     levels = _levels;
     hasher = Hasher(_hasher);
+    
 
     for (uint32 i = 0; i < _levels; i++) {
       filledSubtrees[i] = zeros(i);
@@ -62,8 +65,10 @@ contract MerkleTreeWithHistory is Hasher {
   ) public view returns (bytes32) {
     require(uint256(_left) < FIELD_SIZE, "_left should be inside the field");
     require(uint256(_right) < FIELD_SIZE, "_right should be inside the field");
-    uint[2] memory inputs = [uint(_left), uint(_right)];
-    return bytes32(hash_p(inputs));
+    // uint[2] memory inputs = [uint(_left), uint(_right)];
+    // return bytes32(hash_p(inputs));
+    bytes32[2] memory leftright = [_left, _right];
+    return hasher.poseidon(leftright);
   }
 
   function _insert(bytes32 _leaf) public returns (uint32 index) {
