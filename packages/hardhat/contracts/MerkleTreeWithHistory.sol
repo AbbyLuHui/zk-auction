@@ -14,12 +14,11 @@ pragma solidity ^0.8.10;
 
 // import { Hasher } from "./Hasher.sol";
 
-
-contract Hasher {
+interface Hasher {
     function poseidon(bytes32[2] calldata leftRight)
         external
         pure
-        returns (bytes32) {}
+        returns (bytes32);
 }
 
 
