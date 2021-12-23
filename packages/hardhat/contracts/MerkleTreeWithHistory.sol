@@ -15,7 +15,7 @@ pragma solidity ^0.8.10;
 // import { Hasher } from "./Hasher.sol";
 
 interface Hasher {
-    function poseidon(bytes32[2] calldata leftRight)
+    function poseidon(uint256[] calldata leftRight)
         external
         pure
         returns (bytes32);
@@ -66,7 +66,9 @@ contract MerkleTreeWithHistory {
     require(uint256(_right) < FIELD_SIZE, "_right should be inside the field");
     // uint[2] memory inputs = [uint(_left), uint(_right)];
     // return bytes32(hash_p(inputs));
-    bytes32[2] memory leftright = [_left, _right];
+    uint256[] memory leftright =  new uint256[](2);
+    leftright[0] = uint256(_left);
+    leftright[1] =  uint256(_right);
     return hasher.poseidon(leftright);
   }
 

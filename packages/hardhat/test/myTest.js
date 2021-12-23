@@ -4,7 +4,7 @@ const { solidity } = require("ethereum-waffle");
 // const { MerkleTree } = require('./merkleTree');
 const MerkleTree = require('fixed-merkle-tree');
 const snarkjs = require('snarkjs');
-const { createCode, abi } = require("../node_modules/circomlib/src/poseidon_gencontract");
+const { createCode, abi:poseidonAbi } = require("../node_modules/circomlib/src/poseidon_gencontract");
 const { ContractFactory, BigNumber, BigNumberish } = require("ethers");
 
 use(solidity);
@@ -60,7 +60,7 @@ function getPoseidonFactory(nInputs) {
         "stateMutability": "pure",
         "type": "function"
     }];
-    const abi = new ethers.utils.Interface(abiJson);
+    const abi = new ethers.utils.Interface(poseidonAbi);
     return new ContractFactory(abi, bytecode);
 }
 
@@ -124,6 +124,8 @@ describe("My Dapp", function () {
 
     describe('#hash', () => {
         it('test hash function', async () => {
+        let hash1 =   await Poseidon.poseidon([toFixedHex(1), toFixedHex(2)]);
+        console.log("hash1", hash1)
             let hash = await myContract.hashLeftRight(toFixedHex(1), toFixedHex(2));
             console.log(hash);
         })
